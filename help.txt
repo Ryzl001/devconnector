@@ -6,3 +6,8 @@ mlab.com konfiguracja
     mongodb://admin:admin123@ds247061.mlab.com:47061/devconnectorv1
 
 *************************************************************
+
+
+*** GIT ***
+    git add . - dodaje wszystko 
+    git commit -am 'komentarz' - tworzy commit (cokolwiek to znaczy - odnośnik, punkt kontrolny)
