@@ -1,0 +1,8 @@
+************************************************************ 
+mlab.com konfiguracja
+    user: admin
+    pass: admin123
+
+    mongodb://admin:admin123@ds247061.mlab.com:47061/devconnectorv1
+
+*************************************************************
