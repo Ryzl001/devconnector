@@ -52,5 +52,32 @@ router.post('/register', (req, res) => {
         });
 });
 
+// @route   GET api/users/login
+// @desc    Login user / Returning JWT Token
+// @access  Public
+router.post('/login', (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    // Find user by email ({email: email}) dlatego, że są takie same to wpisujemy tylko ({email})
+    User.findOne({email})
+        .then(user => {
+            if(!user) {
+                return res.status(404).json({email: 'User not found'});
+            } 
+
+            // check Password
+            bcrypt.compare(password, user.password)
+                // zwraca boolean true or false
+                .then(isMatch => {
+                    // jeśli hasło podane zgadza się z tym z bazy danych to...
+                    if(isMatch) {
+                        res.json({msg: 'Success'})
+                    } else {
+                        return res.status(400).json({password: 'Password incorrect'})
+                    }
+                });
+        });
+});
 
 module.exports = router;
