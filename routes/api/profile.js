@@ -3,6 +3,9 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const passport = require('passport');
 
+// Load Validation
+const validateProfileInput = require('../../validation/profile');
+
 // Local Prifle Model
 const Profile = require('../../models/Profile');
 // Load User Model
@@ -24,6 +27,7 @@ router.get('/', passport.authenticate('jwt', {session: false}), (req, res) => {
     const errors = {};
 
     Profile.findOne({ user: req.user.id })
+        .populate('user', ['name', 'avatar']) // pojawi się w zapytaniu GET api/profile - w nawiasach kwadratowych to co chcemy pokazać - ['name', 'avatar']
         .then(profile => {
             if(!profile) {
                 errors.noprofile = 'there is no profile for this user';
@@ -36,9 +40,17 @@ router.get('/', passport.authenticate('jwt', {session: false}), (req, res) => {
 
 
 // @route   POST api/profile
-// @desc    Create or edit user profile
+// @desc    Create or edit / update user profile
 // @access  Private
 router.post('/', passport.authenticate('jwt', {session: false}), (req, res) => {
+    const { errors, isValid } = validateProfileInput(req.body);
+
+    // Check Validation
+    if(!isValid) {
+        // Return any errors with 400 status
+        return res.status(400).json(errors);
+    }
+
     // Get fields
     const profileFields = {};
         // aktualnego usera pobieramy z request
@@ -59,22 +71,26 @@ router.post('/', passport.authenticate('jwt', {session: false}), (req, res) => {
 
     // Social 
     profileFields.social = {};
-    if(req.body.youtube) profileFields.social = req.body.youtube;
-    if(req.body.twitter) profileFields.social = req.body.twitter;
-    if(req.body.facebook) profileFields.social = req.body.facebook;
-    if(req.body.linkedin) profileFields.social = req.body.linkedin;
-    if(req.body.instagram) profileFields.social = req.body.instagram;
+    if(req.body.youtube) profileFields.social.youtube = req.body.youtube;
+    if(req.body.twitter) profileFields.social.twitter = req.body.twitter;
+    if(req.body.facebook) profileFields.social.facebook = req.body.facebook;
+    if(req.body.linkedin) profileFields.social.linkedin = req.body.linkedin;
+    if(req.body.instagram) profileFields.social.instagram = req.body.instagram;
    
     Profile.findOne({ user: req.user.id })
         .then(profile => {
             if(profile) {
+                // console.log(profile)
                 // Update - 
-                Profile.findByIdAndUpdate(
+                Profile.findOneAndUpdate(  // BŁĄD KTÓREGO SZUKAŁEM - było findById, dlatego wyskakiwał błąd
                     { user: req.user.id }, // id użytkownika
                     { $set: profileFields }, // wszystko z profileFields które wcześniej stworzyliśmy
                     { new: true }
-                )
-                .then(profile => res.json(profile));
+                ).then(profile => {
+                    res.json(profile)
+                    console.log(profile)
+                })
+                .catch(err => console.log(err))
             } else {
                 // Create
 

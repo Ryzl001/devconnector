@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 // Create Schema
 const ProfileSchema = new Schema({
     user: {
-        type: Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,  // odnośnik do modelu usera
         ref: 'users'
     },
     handle: {
@@ -109,7 +109,7 @@ const ProfileSchema = new Schema({
         },
         instagram: {
             type: String
-        },
+        }
     }, 
     date: {
         type: Date,
@@ -117,5 +117,6 @@ const ProfileSchema = new Schema({
     }
 
 });
+
 
 module.exports = Profile = mongoose.model('profile', ProfileSchema);
