@@ -5,6 +5,9 @@ const passport = require('passport');
 
 // Load Validation
 const validateProfileInput = require('../../validation/profile');
+const validateExperienceInput = require('../../validation/experience');
+const validateEducationInput = require('../../validation/education');
+
 
 // Local Prifle Model
 const Profile = require('../../models/Profile');
@@ -38,7 +41,7 @@ router.get('/', passport.authenticate('jwt', {session: false}), (req, res) => {
         .catch(err => res.status(404).json(err));
 });
 
-// @route   GET api/profile/all 
+// @route   GET api/profile/all
 // @desc    Get all profiles
 // @access  Public
 router.get('/all', (req, res) => {
@@ -76,7 +79,7 @@ router.get('/handle/:handle', (req, res) => {
         .catch(err => res.status(404).json(err));
 });
 
-// @route   GET api/profile/user/:user_id 
+// @route   GET api/profile/user/:user_id
 // @desc    Get profile by user ID
 // @access  Public
 router.get('/user/:user_id', (req, res) => {
@@ -128,19 +131,19 @@ router.post('/', passport.authenticate('jwt', {session: false}), (req, res) => {
         profileFields.skills = req.body.skills.split(',');
     }
 
-    // Social 
+    // Social
     profileFields.social = {};
     if(req.body.youtube) profileFields.social.youtube = req.body.youtube;
     if(req.body.twitter) profileFields.social.twitter = req.body.twitter;
     if(req.body.facebook) profileFields.social.facebook = req.body.facebook;
     if(req.body.linkedin) profileFields.social.linkedin = req.body.linkedin;
     if(req.body.instagram) profileFields.social.instagram = req.body.instagram;
-   
+
     Profile.findOne({ user: req.user.id })
         .then(profile => {
             if(profile) {
                 // console.log(profile)
-                // Update - 
+                // Update -
                 Profile.findOneAndUpdate(  // BŁĄD KTÓREGO SZUKAŁEM - było findById, dlatego wyskakiwał błąd
                     { user: req.user.id }, // id użytkownika
                     { $set: profileFields }, // wszystko z profileFields które wcześniej stworzyliśmy
@@ -166,6 +169,70 @@ router.post('/', passport.authenticate('jwt', {session: false}), (req, res) => {
                             .then(profile => res.json(profile));
                     })
             }
+        })
+});
+
+// @route   POST api/profile/experience
+// @desc    Add experience to profile
+// @access  Private
+router.post('/experience', passport.authenticate('jwt', { session: false }), (req, res) => {
+    const { errors, isValid } = validateExperienceInput(req.body);
+
+    // Check Validation
+    if(!isValid) {
+        // Return any errors with 400 status
+        return res.status(400).json(errors);
+    }
+
+    Profile.findOne({ user: req.user.id })  //user id przychodzi z wygenerowanego tokena
+        .then(profile => {
+            const newExp = {
+                title: req.body.title,
+                company: req.body.company,
+                location: req.body.location,
+                from: req.body.from,
+                to: req.body.to,
+                current: req.body.current,
+                description: req.body.description
+            }
+
+            // Add to experience array
+            profile.experience.unshift(newExp); // dodane na początku tablicy
+
+            profile.save().then(profile => res.json(profile));
+
+        })
+});
+
+// @route   POST api/profile/education
+// @desc    Add education to profile
+// @access  Private
+router.post('/education', passport.authenticate('jwt', { session: false }), (req, res) => {
+    const { errors, isValid } = validateEducationInput(req.body);
+
+    // Check Validation
+    if(!isValid) {
+        // Return any errors with 400 status
+        return res.status(400).json(errors);
+    }
+
+    Profile.findOne({ user: req.user.id })  //user id przychodzi z wygenerowanego tokena
+        .then(profile => {
+            const newEdu = {
+                school: req.body.school,
+                degree: req.body.degree,
+                fieldofstudy: req.body.fieldofstudy,
+                from: req.body.from,
+                to: req.body.to,
+                current: req.body.current,
+                description: req.body.description
+            }
+
+            // Add to experience array
+            profile.education.unshift(newEdu); // dodane na początku tablicy
+
+            profile.save().then(profile => res.json(profile));
+
         })
 });
 
