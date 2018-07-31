@@ -151,7 +151,6 @@ router.post('/', passport.authenticate('jwt', {session: false}), (req, res) => {
                     { new: true }
                 ).then(profile => {
                     res.json(profile)
-                    console.log(profile)
                 })
                 .catch(err => console.log(err))
             } else {
